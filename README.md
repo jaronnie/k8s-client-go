@@ -16,7 +16,7 @@ kubectl -n kube-system describe secret default| awk '$1=="token:"{print $2}' > c
 grep server  ~/.kube/config | cut -d" " -f 6 > config/url.txt
 ```
 
-具体的一些分析请参照 [kubeconfig2credential](docs/kubeconfig2credential.md)## example
+具体的一些分析请参照 [kubeconfig2credential](docs/kubeconfig2credential.md)
 
 ## example
 ### get
@@ -28,3 +28,6 @@ grep server  ~/.kube/config | cut -d" " -f 6 > config/url.txt
 cd get
 go test -gcflags=-l -v .
 ```
+## TODO
+* deploy program
+* ...
