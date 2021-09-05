@@ -28,7 +28,7 @@ func Connect() (*kubernetes.Clientset, error) {
 	if crt, err = readConfig(); err != nil {
 		goto FAIL
 	}
-	if client, err = getClient("https://kubernetes.docker.internal:6443", crt.Token, crt.Ca); err != nil {
+	if client, err = getClient(crt.Url, crt.Token, crt.Ca); err != nil {
 		goto FAIL
 	}
 	return client, nil
@@ -113,6 +113,8 @@ func readConfig() (*Credential, error) {
 		ca       []byte
 		token    []byte
 		tokenstr string
+		url      []byte
+		urlstr   string
 		err      error
 	)
 	if ca, err = os.ReadFile("../config/credential.pem"); err != nil {
@@ -121,9 +123,13 @@ func readConfig() (*Credential, error) {
 	if token, err = os.ReadFile("../config/token.txt"); err != nil {
 		goto FAIL
 	}
+	if url, err = os.ReadFile("../config/url.txt"); err != nil {
+		goto FAIL
+	}
 	tokenstr = strings.TrimSpace(string(token))
+	urlstr = strings.TrimSpace(string(url))
 	return &Credential{
-		Url:   "https://kubernetes.docker.internal:6443",
+		Url:   urlstr,
 		Ca:    string(ca),
 		Token: tokenstr,
 	}, nil

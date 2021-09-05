@@ -1,0 +1,1 @@
+https://kubernetes.docker.internal:6443
