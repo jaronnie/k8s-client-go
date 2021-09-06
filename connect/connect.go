@@ -3,6 +3,7 @@ package connect
 import (
 	"crypto/x509"
 	"encoding/pem"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -11,12 +12,37 @@ import (
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 )
 
 type Credential struct {
 	Url   string
 	Ca    string
 	Token string
+}
+
+func DefaultConnect() (*kubernetes.Clientset, error) {
+	var (
+		client     *kubernetes.Clientset
+		kubeconfig []byte
+		restConf   *rest.Config
+		err        error
+	)
+	home := homedir.HomeDir()
+	if kubeconfig, err = ioutil.ReadFile(home + "/.kube/config"); err != nil {
+		goto FAIL
+	}
+	// 生成rest client配置
+	if restConf, err = clientcmd.RESTConfigFromKubeConfig(kubeconfig); err != nil {
+		goto FAIL
+	}
+	if client, err = kubernetes.NewForConfig(restConf); err != nil {
+		goto FAIL
+	}
+	return client, nil
+FAIL:
+	return nil, errors.Wrap(err, "connect k8s server")
 }
 
 func Connect() (*kubernetes.Clientset, error) {

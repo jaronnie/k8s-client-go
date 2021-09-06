@@ -42,9 +42,14 @@ func init() {
 	var (
 		err error
 	)
-	if client, err = connect.Connect(); err != nil {
+	// connect with kubeconfig file
+	if client, err = connect.DefaultConnect(); err != nil {
 		goto FAIL
 	}
+	// connect from url, ca, token
+	// if client, err = connect.DefaultConnect(); err != nil {
+	// 	goto FAIL
+	// }
 	return
 FAIL:
 	log.Fatal(err)
