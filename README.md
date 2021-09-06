@@ -1,6 +1,12 @@
 # k8s-client-go example
 
+提供两种方式连接到 k8s server
+
+* connect.Connect()
+* connect.DefaultConnect(), connect from .kube/config, more simple
 ## config
+
+如果你使用第二种方式进行连接，下面的内容不必了解, 直接看 example 即可
 
 * credential.crt
 * credential.pem
