@@ -2,6 +2,7 @@ package get
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"k8test/connect"
 	"log"
@@ -48,7 +49,22 @@ func TestGetNodeList(t *testing.T) {
 		t.Log(err)
 		return
 	}
-	t.Log(nl)
+	jnode, _ := json.Marshal(nl)
+	t.Log(string(jnode))
+}
+
+func TestGetNodeInfoByName(t *testing.T) {
+	var (
+		nodeinfo NodeInfo
+		err      error
+	)
+	grw = GetResourceWorker{
+		Client: client,
+	}
+	if nodeinfo, err = grw.GetNodeInfoByName(ctx, "docker-desktop"); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(nodeinfo)
 }
 
 func init() {
