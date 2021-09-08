@@ -1,5 +1,7 @@
 # k8s-client-go example
 
+k8s version: 1.21.2
+
 提供两种方式连接到 k8s server
 
 * connect.Connect()
