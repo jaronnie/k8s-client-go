@@ -63,15 +63,19 @@ func (grw *GetResourceWorker) GetNodeInfoByName(ctx context.Context, name string
 		node    corev1.Node
 		k8sinfo *version.Info
 	)
+	set := make(map[string]interface{})
 	if nl, err = grw.GetNodeList(ctx); err != nil {
 		goto FAIL
 	}
 	// found node by name
 	for _, v := range nl.Items {
-		if v.ObjectMeta.Name == name {
-			node = v
-			break
-		}
+		set[v.ObjectMeta.Name] = v
+	}
+	if v, ok := set[name]; ok {
+		node = v.(corev1.Node)
+	} else {
+		err = errors.Errorf("node [%s] not found", name)
+		goto FAIL
 	}
 	// id node ready?
 	for _, v := range node.Status.Conditions {
@@ -84,9 +88,11 @@ func (grw *GetResourceWorker) GetNodeInfoByName(ctx context.Context, name string
 	}
 	// is address type "NodeInternalIP"
 	for _, v := range node.Status.Addresses {
-		if v.Type == corev1.NodeInternalIP {
-			break
-		}
+		set[string(v.Type)] = struct{}{}
+	}
+	if _, ok := set[string(corev1.NodeInternalIP)]; !ok {
+		err = errors.Errorf("node [%s] type is not InternalIP", name)
+		goto FAIL
 	}
 	// get k8s info
 	if k8sinfo, err = grw.GetK8sInfo(ctx); err != nil {
