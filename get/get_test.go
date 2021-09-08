@@ -7,6 +7,7 @@ import (
 	"log"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -36,6 +37,18 @@ func TestGetPodList(t *testing.T) {
 		log.Fatal(err)
 	}
 	fmt.Println(pl)
+}
+
+func TestGetNodeList(t *testing.T) {
+	grw = GetResourceWorker{
+		Client: client,
+	}
+	nl, err := grw.GetNodeList(ctx)
+	if !assert.NotNil(t, nl) {
+		t.Log(err)
+		return
+	}
+	t.Log(nl)
 }
 
 func init() {

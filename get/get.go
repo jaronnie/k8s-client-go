@@ -32,3 +32,12 @@ FAIL:
 	return nil, errors.Wrap(err, "fail to get deployment list")
 
 }
+
+func (grw *GetResourceWorker) GetNodeList(ctx context.Context) (nodeList *corev1.NodeList, err error) {
+	if nodeList, err = grw.Client.CoreV1().Nodes().List(ctx, metav1.ListOptions{}); err != nil {
+		goto FAIL
+	}
+	return nodeList, nil
+FAIL:
+	return nil, errors.Wrap(err, "fail to get node list")
+}
