@@ -18,6 +18,25 @@ var (
 	ctx    = context.Background()
 )
 
+func TestGetNameSpaceList(t *testing.T) {
+	grw = GetResourceWorker{
+		Client: client,
+	}
+	nsl, err := grw.GetNameSpaceList(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println(nsl)
+}
+
+func TestIsNameSpaceExist(t *testing.T) {
+	grw = GetResourceWorker{
+		Client: client,
+	}
+	b := grw.IsNameSpaceExist("default")
+	fmt.Println(b)
+}
+
 func TestGetDeploymentList(t *testing.T) {
 	grw = GetResourceWorker{
 		Client: client,

@@ -29,6 +29,37 @@ type NodeInfo struct {
 	Memory int64
 }
 
+// namespace
+
+// namespace list
+func (grw *GetResourceWorker) GetNameSpaceList(ctx context.Context) (nameSpaceList *corev1.NamespaceList, err error) {
+	if nameSpaceList, err = grw.Client.CoreV1().Namespaces().List(ctx, metav1.ListOptions{}); err != nil {
+		goto FAIL
+	}
+	return nameSpaceList, nil
+FAIL:
+	return nil, errors.Wrap(err, "fail to get namespace list")
+}
+
+// is namespace exist?
+func (grw *GetResourceWorker) IsNameSpaceExist(namespace string) (b bool) {
+	var (
+		list *corev1.NamespaceList
+		ctx  = context.Background()
+		err  error
+	)
+	if list, err = grw.GetNameSpaceList(ctx); err != nil {
+		return false
+	}
+	for _, v := range list.Items {
+		if v.ObjectMeta.Name == namespace {
+			return true
+		}
+	}
+	return false
+}
+
+// deployment
 func (grw *GetResourceWorker) GetdeploymentList(ctx context.Context) (deploymentList *appsv1.DeploymentList, err error) {
 	if deploymentList, err = grw.Client.AppsV1().Deployments("default").List(ctx, metav1.ListOptions{}); err != nil {
 		goto FAIL
@@ -38,6 +69,7 @@ FAIL:
 	return nil, errors.Wrap(err, "fail to get deployment list")
 }
 
+// pod
 func (grw *GetResourceWorker) GetPodList(ctx context.Context) (podList *corev1.PodList, err error) {
 	if podList, err = grw.Client.CoreV1().Pods("default").List(ctx, metav1.ListOptions{}); err != nil {
 		goto FAIL
@@ -48,6 +80,7 @@ FAIL:
 
 }
 
+// node
 func (grw *GetResourceWorker) GetNodeList(ctx context.Context) (nodeList *corev1.NodeList, err error) {
 	if nodeList, err = grw.Client.CoreV1().Nodes().List(ctx, metav1.ListOptions{}); err != nil {
 		goto FAIL
