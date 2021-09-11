@@ -3,6 +3,7 @@ package delete
 import (
 	"context"
 	"k8test/connect"
+	"k8test/constant"
 	"log"
 	"testing"
 
@@ -68,6 +69,27 @@ func TestDeleteByYAML(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Log("success delete resouce by yaml")
+}
+
+func TestDeleteByLabels(t *testing.T) {
+	var (
+		dw = &DeleteWorker{
+			Client:    client,
+			NameSpace: "default",
+		}
+	)
+	labels := map[string]string{
+		"app":"kube-go-app",
+	}
+	// delete service
+	if err := dw.DeleteByLabels(ctx, constant.Service, labels); err != nil {
+		t.Fatal(err)
+	}
+	// delete deployment
+	if err := dw.DeleteByLabels(ctx, constant.Deployment, labels); err != nil {
+		t.Fatal(err)
+	}
+	t.Log("pass")
 }
 
 func init() {

@@ -11,6 +11,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	k8labels "k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -19,15 +20,15 @@ type DeleteWorker struct {
 	NameSpace string
 }
 
-// delete resource by name
-// namesapce name
+// DeleteByName delete resource by name
+// namespace name
 // deployment name
 // pod name
 // service name
 // ...
 func (dw *DeleteWorker) DeleteByName(ctx context.Context, resourceType string, name string) {}
 
-// delete resource by yaml
+// DeleteByYAML delete resource by yaml
 func (dw *DeleteWorker) DeleteByYAML(ctx context.Context, yaml string) error {
 	var (
 		b   [][]byte
@@ -43,8 +44,53 @@ FAIL:
 	return errors.Wrap(err, "fail to delete resource")
 }
 
-// delete resource by labels
-func (dw *DeleteWorker) DeleteByLabels(ctx context.Context, labels string) {}
+// DeleteByLabels delete resource by labels
+// labels
+// for example
+// app=kube-go-app
+func (dw *DeleteWorker) DeleteByLabels(ctx context.Context, resourceType string, labels map[string]string) error {
+	var (
+		set k8labels.Selector
+		options metav1.ListOptions
+		deploymentList *appsv1.DeploymentList
+		serviceList *corev1.ServiceList
+		err error
+	)
+	set = k8labels.SelectorFromSet(labels)
+	options = metav1.ListOptions{
+		LabelSelector: set.String(),
+	}
+	switch resourceType {
+	case constant.Deployment:
+		if deploymentList, err = dw.Client.AppsV1().Deployments(dw.NameSpace).List(ctx, options); err != nil {
+			goto FAIL
+		}
+		if len(deploymentList.Items) == 0 {
+			err = errors.Errorf("not found resource by labels [%v]", labels)
+			goto FAIL
+		}
+		for _, v := range deploymentList.Items {
+			if err = dw.Client.AppsV1().Deployments(dw.NameSpace).Delete(ctx, v.Name, metav1.DeleteOptions{}); err != nil {
+				goto FAIL
+			}
+		}
+	case constant.Service:
+		if serviceList, err = dw.Client.CoreV1().Services(dw.NameSpace).List(ctx, options); err != nil {
+			goto FAIL
+		}
+		if len(serviceList.Items) == 0 {
+			err = errors.Errorf("not found resource by labels [%v]", labels)
+			goto FAIL
+		}
+		for _, v := range serviceList.Items {
+			if err = dw.Client.CoreV1().Services(dw.NameSpace).Delete(ctx, v.Name, metav1.DeleteOptions{}); err != nil {
+				goto FAIL
+			}
+		}
+	}
+FAIL:
+	return errors.Wrap(err, "fail to delete by labels")
+}
 
 func deleteOperator(client *kubernetes.Clientset, namespace string, jsons [][]byte) (err error) {
 	var (

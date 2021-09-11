@@ -78,7 +78,7 @@ func init() {
 		goto FAIL
 	}
 	// connect from url, ca, token
-	// if client, err = connect.DefaultConnect(); err != nil {
+	// if client, err = connect.Connect(); err != nil {
 	// 	goto FAIL
 	// }
 	return
