@@ -37,6 +37,18 @@ func TestIsNameSpaceExist(t *testing.T) {
 	fmt.Println(b)
 }
 
+func TestGetK8sIpAddress(t *testing.T) {
+	grw = GetResourceWorker{
+		Client: client,
+	}
+	addresses, err := grw.GetK8sIpAddress(ctx)
+	if !assert.NotNil(t, addresses) {
+		t.Log(err)
+		return
+	}
+	fmt.Println(addresses)
+}
+
 func TestGetDeploymentList(t *testing.T) {
 	grw = GetResourceWorker{
 		Client: client,
