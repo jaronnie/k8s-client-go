@@ -10,25 +10,28 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-var goBackendApp = `
+var (
+	client *kubernetes.Clientset
+	ctx    = context.Background()
+)
+
+var GoBackendApp = `
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend1
+  name: kube-go-app-deployment
+  labels:
+    app: kube-go-app
 spec:
   selector:
     matchLabels:
       app: kube-go-app
-      tier: backend1
-      track: stable
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
         app: kube-go-app
-        tier: backend1
-        track: stable
     spec:
       containers:
         - name: kube-go-app
@@ -40,23 +43,19 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: kube-go-app
+  name: kube-go-app-service
+  labels:
+    app: kube-go-app
 spec:
   selector:
     app: kube-go-app
-    tier: backend1
   ports:
     - name: go-app
       protocol: TCP
       port: 8888
       targetPort: 8888
-  type: LoadBalancer
+  type: NodePort
 `
-
-var (
-	client *kubernetes.Clientset
-	ctx    = context.Background()
-)
 
 func TestDeleteByYAML(t *testing.T) {
 	var (
@@ -65,7 +64,7 @@ func TestDeleteByYAML(t *testing.T) {
 			NameSpace: "default",
 		}
 	)
-	if err := dw.DeleteByYAML(ctx, goBackendApp); err != nil {
+	if err := dw.DeleteByYAML(ctx, GoBackendApp); err != nil {
 		t.Fatal(err)
 	}
 	t.Log("success delete resouce by yaml")
@@ -79,7 +78,7 @@ func TestDeleteByLabels(t *testing.T) {
 		}
 	)
 	labels := map[string]string{
-		"app":"kube-go-app",
+		"app": "kube-go-app",
 	}
 	// delete service
 	if err := dw.DeleteByLabels(ctx, constant.Service, labels); err != nil {

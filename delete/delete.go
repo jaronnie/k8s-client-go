@@ -20,15 +20,17 @@ type DeleteWorker struct {
 	NameSpace string
 }
 
-// DeleteByName delete resource by name
+// DeleteByMetaname delete resource by name
 // namespace name
 // deployment name
 // pod name
 // service name
 // ...
-func (dw *DeleteWorker) DeleteByName(ctx context.Context, resourceType string, name string) {}
+// 由于同一个类型的资源 metaname 在集群中是唯一的，所以通过 metaname 删除更安全！
+func (dw *DeleteWorker) DeleteByMetaname(ctx context.Context, resourceType string, name string) {}
 
 // DeleteByYAML delete resource by yaml
+// 通过该方法删除是最好的， 通过 yaml 创建的资源将会被全部删除！
 func (dw *DeleteWorker) DeleteByYAML(ctx context.Context, yaml string) error {
 	var (
 		b   [][]byte
@@ -48,13 +50,14 @@ FAIL:
 // labels
 // for example
 // app=kube-go-app
+// 如果同一个类型资源存在相同的 label, 则该资源全部会被删除，除非该 label 全局唯一！
 func (dw *DeleteWorker) DeleteByLabels(ctx context.Context, resourceType string, labels map[string]string) error {
 	var (
-		set k8labels.Selector
-		options metav1.ListOptions
+		set            k8labels.Selector
+		options        metav1.ListOptions
 		deploymentList *appsv1.DeploymentList
-		serviceList *corev1.ServiceList
-		err error
+		serviceList    *corev1.ServiceList
+		err            error
 	)
 	set = k8labels.SelectorFromSet(labels)
 	options = metav1.ListOptions{

@@ -9,6 +9,7 @@ require (
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/pkg/errors v0.9.1
+	github.com/spf13/cast v1.4.1 // indirect
 	github.com/stretchr/testify v1.6.1
 	k8s.io/api v0.21.4
 	k8s.io/apimachinery v0.21.4

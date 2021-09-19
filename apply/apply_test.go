@@ -1,7 +1,7 @@
 package apply
 
 import (
-	"context"
+	"fmt"
 	"k8test/connect"
 	"log"
 	"testing"
@@ -12,28 +12,25 @@ import (
 var (
 	client *kubernetes.Clientset
 	aw     ApplyWorker
-	ctx    = context.Background()
 )
 
-var goBackendApp = `
+var GoBackendApp = `
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: backend1
+  name: kube-go-app-deployment
+  labels:
+    app: kube-go-app
 spec:
   selector:
     matchLabels:
       app: kube-go-app
-      tier: backend1
-      track: stable
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
         app: kube-go-app
-        tier: backend1
-        track: stable
     spec:
       containers:
         - name: kube-go-app
@@ -45,17 +42,18 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: kube-go-app
+  name: kube-go-app-service
+  labels:
+    app: kube-go-app
 spec:
   selector:
     app: kube-go-app
-    tier: backend1
   ports:
     - name: go-app
       protocol: TCP
       port: 8888
       targetPort: 8888
-  type: LoadBalancer
+  type: NodePort
 `
 
 func TestApplyByYAML(t *testing.T) {
@@ -63,10 +61,11 @@ func TestApplyByYAML(t *testing.T) {
 		Client:    client,
 		NameSpace: "default",
 	}
-	err := aw.ApplyByYAML(goBackendApp)
+	aps, err := aw.ApplyByYAML(GoBackendApp)
 	if err != nil {
 		t.Log(err)
 	}
+	fmt.Println(aps)
 }
 
 func init() {

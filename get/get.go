@@ -25,8 +25,9 @@ type K8sInfo struct {
 type NodeInfo struct {
 	K8sInfo
 
-	CPU    int64
-	Memory int64
+	address string
+	CPU     int64
+	Memory  int64
 }
 
 // namespace
@@ -149,6 +150,7 @@ func (grw *GetResourceWorker) GetNodeInfoByName(ctx context.Context, name string
 		goto FAIL
 	}
 	// get node info
+	nodeinfo.address = node.Status.Addresses[0].Address
 	nodeinfo.CPU = node.Status.Capacity.Cpu().Value()
 	nodeinfo.Memory = node.Status.Capacity.Memory().Value()
 	nodeinfo.K8sInfo.GitVersion = k8sinfo.GitVersion

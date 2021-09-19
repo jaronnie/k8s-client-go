@@ -3,6 +3,7 @@ package apply
 import (
 	"context"
 	"encoding/json"
+
 	"k8test/constant"
 	"k8test/get"
 	"k8test/util"
@@ -20,34 +21,37 @@ type ApplyWorker struct {
 }
 
 // already available yaml
-func (aw *ApplyWorker) ApplyByYAML(yaml string) error {
+func (aw *ApplyWorker) ApplyByYAML(yaml string) (res map[string]interface{}, err error) {
 	var (
-		b   [][]byte
-		err error
+		b [][]byte
 	)
 	if b, err = util.Yaml2Jsons([]byte(yaml)); err != nil {
 		goto FAIL
 	}
-	if err = applyOperator(aw.Client, aw.NameSpace, b); err != nil {
+	if res, err = applyOperator(aw.Client, aw.NameSpace, b); err != nil {
 		goto FAIL
 	}
+	return
 FAIL:
-	return errors.Wrap(err, "fail to apply yaml")
+	return nil, errors.Wrap(err, "fail to apply yaml")
 }
 
-func applyOperator(client *kubernetes.Clientset, namespace string, jsons [][]byte) (err error) {
+func applyOperator(client *kubernetes.Clientset, namespace string, jsons [][]byte) (res map[string]interface{}, err error) {
 	var (
 		grw = &get.GetResourceWorker{
 			Client: client,
 		}
 	)
 	var (
-		deployment appsv1.Deployment
-		service    corev1.Service
+		deploymentReq *appsv1.Deployment
+		deploymentRes *appsv1.Deployment
+		serviceReq    *corev1.Service
+		serviceRes    *corev1.Service
 	)
 	var (
 		ctx = context.Background()
 	)
+	res = make(map[string]interface{})
 	// is namespace exist
 	if !grw.IsNameSpaceExist(namespace) {
 		err = errors.Errorf("not found namespace [%s]", namespace)
@@ -60,22 +64,24 @@ func applyOperator(client *kubernetes.Clientset, namespace string, jsons [][]byt
 		}
 		switch entity["kind"] {
 		case constant.Deployment:
-			if err = json.Unmarshal(v, &deployment); err != nil {
+			if err = json.Unmarshal(v, &deploymentReq); err != nil {
 				goto FAIL
 			}
-			if _, err = client.AppsV1().Deployments(namespace).Create(ctx, &deployment, metav1.CreateOptions{}); err != nil {
+			if deploymentRes, err = client.AppsV1().Deployments(namespace).Create(ctx, deploymentReq, metav1.CreateOptions{}); err != nil {
 				goto FAIL
 			}
+			res[constant.Deployment] = deploymentRes
 		case constant.Service:
-			if err = json.Unmarshal(v, &service); err != nil {
+			if err = json.Unmarshal(v, &serviceReq); err != nil {
 				goto FAIL
 			}
-			if _, err = client.CoreV1().Services(namespace).Create(ctx, &service, metav1.CreateOptions{}); err != nil {
+			if serviceRes, err = client.CoreV1().Services(namespace).Create(ctx, serviceReq, metav1.CreateOptions{}); err != nil {
 				goto FAIL
 			}
+			res[constant.Service] = serviceRes
 		}
 	}
-	return nil
+	return
 FAIL:
-	return errors.Wrap(err, "apply yaml error")
+	return nil, errors.Wrap(err, "apply yaml error")
 }
