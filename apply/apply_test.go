@@ -1,6 +1,7 @@
 package apply
 
 import (
+	"encoding/json"
 	"fmt"
 	"k8test/connect"
 	"log"
@@ -35,6 +36,13 @@ spec:
       containers:
         - name: kube-go-app
           image: "gocloudcoder/kube-go-app:v1"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+              cpu: "100m"
+              memory: "500Mi"
           ports:
             - name: http
               containerPort: 8888
@@ -65,7 +73,8 @@ func TestApplyByYAML(t *testing.T) {
 	if err != nil {
 		t.Log(err)
 	}
-	fmt.Println(aps)
+	b, _ := json.Marshal(aps["Deployment"])
+	fmt.Println(string(b))
 }
 
 func init() {

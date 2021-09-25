@@ -37,16 +37,16 @@ func TestIsNameSpaceExist(t *testing.T) {
 	fmt.Println(b)
 }
 
-func TestGetK8sIpAddress(t *testing.T) {
+func TestGetNodeAddressByName(t *testing.T) {
 	grw = GetResourceWorker{
 		Client: client,
 	}
-	addresses, err := grw.GetK8sIpAddress(ctx)
-	if !assert.NotNil(t, addresses) {
+	address, err := grw.GetNodeAddressByName(ctx, "docker-desktop")
+	if !assert.NotNil(t, address) {
 		t.Log(err)
 		return
 	}
-	fmt.Println(addresses)
+	fmt.Println(address)
 }
 
 func TestGetDeploymentList(t *testing.T) {
@@ -57,7 +57,10 @@ func TestGetDeploymentList(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(dl)
+	for _, v := range dl.Items {
+		b, _ := json.Marshal(v)
+		fmt.Println(string(b))
+	}
 }
 
 func TestGetPodList(t *testing.T) {
@@ -68,7 +71,10 @@ func TestGetPodList(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(pl)
+	for _, v := range pl.Items {
+		b, _ := json.Marshal(v)
+		fmt.Println(string(b))
+	}
 }
 
 func TestGetNodeList(t *testing.T) {

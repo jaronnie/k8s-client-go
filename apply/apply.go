@@ -20,8 +20,10 @@ type ApplyWorker struct {
 	NameSpace string
 }
 
+type ApplyResponse map[string]interface{}
+
 // already available yaml
-func (aw *ApplyWorker) ApplyByYAML(yaml string) (res map[string]interface{}, err error) {
+func (aw *ApplyWorker) ApplyByYAML(yaml string) (res ApplyResponse, err error) {
 	var (
 		b [][]byte
 	)
@@ -36,7 +38,7 @@ FAIL:
 	return nil, errors.Wrap(err, "fail to apply yaml")
 }
 
-func applyOperator(client *kubernetes.Clientset, namespace string, jsons [][]byte) (res map[string]interface{}, err error) {
+func applyOperator(client *kubernetes.Clientset, namespace string, jsons [][]byte) (res ApplyResponse, err error) {
 	var (
 		grw = &get.GetResourceWorker{
 			Client: client,

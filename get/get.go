@@ -91,21 +91,29 @@ FAIL:
 	return nil, errors.Wrap(err, "fail to get node list")
 }
 
-// GetK8sIpAddress
-// cluster ip
-func (grw *GetResourceWorker) GetK8sIpAddress(ctx context.Context) (addresses []string, err error) {
+func (grw *GetResourceWorker) GetNodeAddressByName(ctx context.Context, name string) (address string, err error) {
 	var (
 		nodeList *corev1.NodeList
+		ok       bool
 	)
+	addressMap := make(map[string]string)
 	if nodeList, err = grw.GetNodeList(ctx); err != nil {
 		goto FAIL
 	}
 	for _, v := range nodeList.Items {
-		addresses = append(addresses, v.Status.Addresses[0].Address)
+		for _, vv := range v.Status.Addresses {
+			if vv.Type == corev1.NodeInternalIP {
+				addressMap[v.ObjectMeta.Name] = vv.Address
+			}
+		}
+	}
+	if address, ok = addressMap[name]; !ok {
+		err = errors.New("not fount this node name")
+		goto FAIL
 	}
 	return
 FAIL:
-	return nil, errors.Wrap(err, "fail to get k8s ip address")
+	return "", errors.Wrap(err, "fail to get k8s ip address")
 }
 
 func (grw *GetResourceWorker) GetNodeInfoByName(ctx context.Context, name string) (nodeinfo NodeInfo, err error) {

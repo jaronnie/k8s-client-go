@@ -62,6 +62,19 @@ FAIL:
 	return nil, errors.Wrap(err, "connect k8s server")
 }
 
+// use for cmd interface
+func NewRestConfig() (*rest.Config, error) {
+	credential, err := readConfig()
+	if err != nil {
+		panic(err)
+	}
+	config, err := newConfig(credential.Url, credential.Token, credential.Ca)
+	if err != nil {
+		panic(err)
+	}
+	return config, err
+}
+
 func getClient(apiURL string, token string, caCert string) (*kubernetes.Clientset, error) {
 	config, err := newConfig(apiURL, token, caCert)
 	if err != nil {

@@ -27,6 +27,7 @@ type DeleteWorker struct {
 // service name
 // ...
 // 由于同一个类型的资源 metaname 在集群中是唯一的，所以通过 metaname 删除更安全！
+// deleteByYaml 方法中也是通过删除 metaname 进行删除的.
 func (dw *DeleteWorker) DeleteByMetaname(ctx context.Context, resourceType string, name string) {}
 
 // DeleteByYAML delete resource by yaml
