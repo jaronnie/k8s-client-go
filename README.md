@@ -39,3 +39,4 @@ go test -gcflags=-l -v .
 ## TODO
 * deploy program
 * ...
+test
